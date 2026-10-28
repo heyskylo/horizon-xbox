@@ -19,6 +19,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
+        # The C runtime linked in: an Xbox's UWP container has no desktop vcruntime140.dll to load.
+        env:
+          RUSTFLAGS: -C target-feature=+crt-static
         run: cargo build --release --locked -p horizon-xbox
       - name: Pack and sign
         shell: pwsh

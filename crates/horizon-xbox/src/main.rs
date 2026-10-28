@@ -24,7 +24,7 @@ mod uwp {
         },
         Storage::ApplicationData,
         UI::Core::{CoreProcessEventsOption, CoreWindow},
-        Win32::System::Com::{CoInitializeEx, COINIT_MULTITHREADED},
+        Win32::System::Com::CoIncrementMTAUsage,
     };
     use windows_core::{implement, Result, HSTRING};
 
@@ -68,8 +68,10 @@ mod uwp {
     }
 
     pub fn run() -> Result<()> {
-        // SAFETY: once, on the app's own thread, before any WinRT call.
-        unsafe { CoInitializeEx(None, COINIT_MULTITHREADED).ok()? };
+        // The process's MTA, as windows-rs's core_app sample keeps it: CoInitializeEx would make this the
+        // MTA thread, and CoreApplication::Run, which wants it for its own ASTA, then fails at once.
+        // SAFETY: no arguments; the cookie lives as long as the process.
+        unsafe { CoIncrementMTAUsage()? };
         CoreApplication::Run(&IFrameworkViewSource::from(Source))
     }
 }
