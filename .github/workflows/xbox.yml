@@ -19,9 +19,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
-        # The C runtime linked in: an Xbox's UWP container has no desktop vcruntime140.dll to load.
+        # The C runtime linked in (an Xbox's UWP container has no desktop vcruntime140.dll), and the
+        # AppContainer bit a UWP executable must carry: without it the console answers 0x80070002.
         env:
-          RUSTFLAGS: -C target-feature=+crt-static
+          RUSTFLAGS: -C target-feature=+crt-static -C link-arg=/APPCONTAINER
         run: cargo build --release --locked -p horizon-xbox
       - name: Pack and sign
         shell: pwsh
